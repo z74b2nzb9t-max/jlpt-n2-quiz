@@ -1102,11 +1102,10 @@ body,.app,.card{overflow-anchor:none}
  apply(false); gear.addEventListener('click',e=>{e.stopPropagation();panel.classList.toggle('open')});$('jmmPipClose').onclick=()=>panel.classList.remove('open');
  controls.w.addEventListener('input',()=>{state.w=+controls.w.value;apply()});controls.x.addEventListener('input',()=>{state.x=+controls.x.value;apply()});controls.y.addEventListener('input',()=>{state.y=+controls.y.value;apply()});
  $('jmmPipReset').onclick=()=>{state={w:220,x:100,y:80};apply();panel.classList.remove('open')};
- let drag=null;head.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;const r=mini.getBoundingClientRect();drag={x:e.clientX,y:e.clientY,left:r.left,top:r.top};head.setPointerCapture?.(e.pointerId);e.preventDefault()});head.addEventListener('pointermove',e=>{if(!drag)return;const r=mini.getBoundingClientRect();const left=clamp(drag.left+e.clientX-drag.x,8,innerWidth-r.width-8);const top=clamp(drag.top+e.clientY-drag.y,8,innerHeight-r.height-8);state.x=100*(left/(innerWidth-r.width-16||1));state.y=100*(top/(innerHeight-r.height-16||1));apply()});head.addEventListener('pointerup',()=>{drag=null});head.addEventListener('pointercancel',()=>{drag=null});
- let resize=null;grip.addEventListener('pointerdown',e=>{const r=mini.getBoundingClientRect();resize={x:e.clientX,w:r.width};grip.setPointerCapture?.(e.pointerId);e.preventDefault();e.stopPropagation()});grip.addEventListener('pointermove',e=>{if(!resize)return;state.w=clamp(resize.w+(e.clientX-resize.x),140,Math.min(420,innerWidth-20));apply()});grip.addEventListener('pointerup',()=>{resize=null});grip.addEventListener('pointercancel',()=>{resize=null});
+ /* Drag and resize are handled by the unified v59 pointer controller below. */
  window.addEventListener('resize',()=>apply(false));
  // Fix floating mini-video placement when changing screens: always use saved viewport coordinates.
- const observer=new MutationObserver(()=>{if(mini.classList.contains('open'))apply(false)});observer.observe(mini,{attributes:true,attributeFilter:['class']});
+ const observer=new MutationObserver(()=>{if(mini.classList.contains('open')){try{state=Object.assign(state,JSON.parse(localStorage.getItem('jlptPipLayout')||'{}'))}catch(_){}apply(false)}});observer.observe(mini,{attributes:true,attributeFilter:['class']});
 })();
 </script>
 </body>
