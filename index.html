@@ -810,20 +810,85 @@ renderTrack();loadTrack(0,false);if(location.protocol==='file:'){$('jmFileHelp')
 
 <script id="v59-pip-idle-and-docking-fix">
 (function(){
- const mini=document.getElementById('jmMiniVideo'),launcher=document.getElementById('jlptMusicLauncher'),gear=document.getElementById('jmmPipGear'),hide=document.getElementById('jmmHide'),grip=document.getElementById('jmmResizeHandle'),panel=document.getElementById('jmmPipSettings');if(!mini||!launcher)return;
- let idleTimer=0;const resetIdle=()=>{mini.classList.remove('pip-idle');clearTimeout(idleTimer);if(mini.classList.contains('open'))idleTimer=setTimeout(()=>{mini.classList.add('pip-idle');panel?.classList.remove('open')},3200)};
+ const mini=document.getElementById('jmMiniVideo'),launcher=document.getElementById('jlptMusicLauncher'),grip=document.getElementById('jmmResizeHandle'),panel=document.getElementById('jmmPipSettings');
+ if(!mini||!launcher)return;
+ let idleTimer=0,wasOpen=mini.classList.contains('open');
+ const resetIdle=()=>{
+   clearTimeout(idleTimer);
+   mini.classList.remove('pip-idle');
+   if(mini.classList.contains('open')){
+     idleTimer=setTimeout(()=>{
+       if(mini.classList.contains('open')){
+         mini.classList.add('pip-idle');
+         panel?.classList.remove('open');
+       }
+     },3200);
+   }
+ };
  ['pointerdown','pointermove','touchstart','click','focusin'].forEach(ev=>mini.addEventListener(ev,resetIdle,{passive:true}));
- mini.addEventListener('transitionend',resetIdle);const mo=new MutationObserver(()=>{if(mini.classList.contains('open'))resetIdle();else{clearTimeout(idleTimer);mini.classList.remove('pip-idle');panel?.classList.remove('open');/* Keep the music launcher in its normal dock when the video is dismissed. */launcher.style.setProperty('left','auto','important');launcher.style.setProperty('right','16px','important');launcher.style.setProperty('bottom','calc(24px + env(safe-area-inset-bottom))','important');}});mo.observe(mini,{attributes:true,attributeFilter:['class']});
- // Pointer capture on the document is more reliable on iOS than capture on tiny handles.
- let drag=null,resize=null;const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));function store(){const r=mini.getBoundingClientRect();let st={w:r.width,x:100*r.left/Math.max(1,innerWidth-r.width),y:100*r.top/Math.max(1,innerHeight-r.height)};try{localStorage.setItem('jlptPipLayout',JSON.stringify(st))}catch(e){}}
- mini.querySelector('.jmm-head')?.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;const r=mini.getBoundingClientRect();drag={id:e.pointerId,x:e.clientX,y:e.clientY,left:r.left,top:r.top};mini.querySelector('.jmm-head').setPointerCapture?.(e.pointerId);e.preventDefault()});
- grip?.addEventListener('pointerdown',e=>{const r=mini.getBoundingClientRect();resize={id:e.pointerId,x:e.clientX,w:r.width};grip.setPointerCapture?.(e.pointerId);e.preventDefault();e.stopPropagation()});
- document.addEventListener('pointermove',e=>{if(drag&&e.pointerId===drag.id){const r=mini.getBoundingClientRect(),left=clamp(drag.left+e.clientX-drag.x,6,innerWidth-r.width-6),top=clamp(drag.top+e.clientY-drag.y,6,innerHeight-r.height-6);mini.style.setProperty('left',left+'px','important');mini.style.setProperty('top',top+'px','important');mini.style.setProperty('right','auto','important');mini.style.setProperty('bottom','auto','important');resetIdle()}else if(resize&&e.pointerId===resize.id){const w=clamp(resize.w+e.clientX-resize.x,Math.min(150,innerWidth-16),Math.min(420,innerWidth-12));mini.style.setProperty('width',w+'px','important');mini.style.setProperty('left',clamp(mini.getBoundingClientRect().left,6,innerWidth-w-6)+'px','important');mini.style.setProperty('right','auto','important');mini.style.setProperty('bottom','auto','important');resetIdle()}},{passive:false});
- function end(e){if(drag&&(!e||e.pointerId===drag.id)){drag=null;store()}if(resize&&(!e||e.pointerId===resize.id)){resize=null;store()}}document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end);window.addEventListener('resize',()=>{const r=mini.getBoundingClientRect();if(r.width&&r.height){mini.style.setProperty('left',clamp(r.left,6,innerWidth-r.width-6)+'px','important');mini.style.setProperty('top',clamp(r.top,6,innerHeight-r.height-6)+'px','important')}});
+ // Observe only opening/closing; observing every class change can cancel the idle timer.
+ const mo=new MutationObserver(()=>{
+   const isOpen=mini.classList.contains('open');
+   if(isOpen===wasOpen)return;
+   wasOpen=isOpen;
+   if(isOpen)resetIdle();
+   else{
+     clearTimeout(idleTimer);
+     mini.classList.remove('pip-idle');
+     panel?.classList.remove('open');
+     launcher.style.setProperty('left','auto','important');
+     launcher.style.setProperty('right','16px','important');
+     launcher.style.setProperty('bottom','calc(24px + env(safe-area-inset-bottom))','important');
+   }
+ });
+ mo.observe(mini,{attributes:true,attributeFilter:['class']});
+ let drag=null,resize=null;
+ const clamp=(n,a,b)=>Math.max(a,Math.min(n,b));
+ function store(){
+   const r=mini.getBoundingClientRect();
+   const st={w:r.width,x:100*r.left/Math.max(1,innerWidth-r.width),y:100*r.top/Math.max(1,innerHeight-r.height)};
+   try{localStorage.setItem('jlptPipLayout',JSON.stringify(st))}catch(e){}
+ }
+ mini.querySelector('.jmm-head')?.addEventListener('pointerdown',e=>{
+   if(e.target.closest('button'))return;
+   const r=mini.getBoundingClientRect();
+   drag={id:e.pointerId,x:e.clientX,y:e.clientY,left:r.left,top:r.top};
+   e.preventDefault();
+ });
+ grip?.addEventListener('pointerdown',e=>{
+   const r=mini.getBoundingClientRect();
+   resize={id:e.pointerId,x:e.clientX,w:r.width};
+   e.preventDefault();e.stopPropagation();
+ });
+ document.addEventListener('pointermove',e=>{
+   if(drag&&e.pointerId===drag.id){
+     const r=mini.getBoundingClientRect();
+     const left=clamp(drag.left+e.clientX-drag.x,6,Math.max(6,innerWidth-r.width-6));
+     const top=clamp(drag.top+e.clientY-drag.y,6,Math.max(6,innerHeight-r.height-6));
+     mini.style.setProperty('left',left+'px','important');mini.style.setProperty('top',top+'px','important');
+     mini.style.setProperty('right','auto','important');mini.style.setProperty('bottom','auto','important');
+   }else if(resize&&e.pointerId===resize.id){
+     const w=clamp(resize.w+e.clientX-resize.x,Math.min(150,innerWidth-16),Math.min(420,innerWidth-12));
+     mini.style.setProperty('width',w+'px','important');
+     mini.style.setProperty('left',clamp(mini.getBoundingClientRect().left,6,Math.max(6,innerWidth-w-6))+'px','important');
+     mini.style.setProperty('right','auto','important');mini.style.setProperty('bottom','auto','important');
+   }
+ },{passive:true});
+ function end(e){
+   if(drag&&(!e||e.pointerId===drag.id)){drag=null;store()}
+   if(resize&&(!e||e.pointerId===resize.id)){resize=null;store()}
+ }
+ document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end);
+ window.addEventListener('resize',()=>{
+   const r=mini.getBoundingClientRect();
+   if(r.width&&r.height){
+     mini.style.setProperty('left',clamp(r.left,6,Math.max(6,innerWidth-r.width-6))+'px','important');
+     mini.style.setProperty('top',clamp(r.top,6,Math.max(6,innerHeight-r.height-6))+'px','important');
+   }
+ });
 })();
 </script>
 
-</body></html>
 <style id="v14-polish">
 html{overflow-anchor:none;scroll-behavior:auto}
 body,.app,.card{overflow-anchor:none}
@@ -932,8 +997,7 @@ body,.app,.card{overflow-anchor:none}
 @media(prefers-reduced-motion:reduce){#jlptMusicLauncher,#jmMiniVideo,#jlptMusicOverlay,#jlptMusicOverlay .jm-shell{transition:none!important;animation:none!important}}
 </style>
 <script id="v26-music-morph-animation">
-(function(){
-  const $=id=>document.getElementById(id);
+(function(){  const $=id=>document.getElementById(id);
   const launcher=$('jlptMusicLauncher'), overlay=$('jlptMusicOverlay'), closeBtn=$('jmClose');
   if(!launcher||!overlay)return;
   const shell=overlay.querySelector('.jm-shell');
@@ -997,7 +1061,8 @@ body,.app,.card{overflow-anchor:none}
 #jlptMusicOverlay .jm-track::after{content:none!important;display:none!important}
 #jlptMusicOverlay .jm-track-wave{display:flex;align-items:center;justify-content:center;gap:2px;width:24px;height:28px;color:#aebbd2}
 #jlptMusicOverlay .jm-track-wave i{display:block;width:3px;height:5px;border-radius:3px;background:currentColor;transform-origin:center;opacity:.7}
-#jlptMusicOverlay .jm-track.active .jm-track-wave{color:#c6b7ff}#jlptMusicOverlay .jm-track.active .jm-track-wave i{animation:jmWave 720ms ease-in-out infinite alternate;opacity:1}
+#jlptMusicOverlay .jm-track.active .jm-track-wave{color:#c6b7ff}
+#jlptMusicOverlay .jm-track.active .jm-track-wave i{animation:jmWave 720ms ease-in-out infinite alternate;opacity:1}
 #jlptMusicOverlay .jm-track.active .jm-track-wave i:nth-child(2){animation-delay:-480ms}
 #jlptMusicOverlay .jm-track.active .jm-track-wave i:nth-child(3){animation-delay:-240ms}
 #jlptMusicOverlay .jm-track.active .jm-track-wave i:nth-child(4){animation-delay:-600ms}
@@ -1105,7 +1170,7 @@ body,.app,.card{overflow-anchor:none}
  /* Drag and resize are handled by the unified v59 pointer controller below. */
  window.addEventListener('resize',()=>apply(false));
  // Fix floating mini-video placement when changing screens: always use saved viewport coordinates.
- const observer=new MutationObserver(()=>{if(mini.classList.contains('open')){try{state=Object.assign(state,JSON.parse(localStorage.getItem('jlptPipLayout')||'{}'))}catch(_){}apply(false)}});observer.observe(mini,{attributes:true,attributeFilter:['class']});
+ let previousOpen=mini.classList.contains('open');const observer=new MutationObserver(()=>{const open=mini.classList.contains('open');if(open===previousOpen)return;previousOpen=open;if(open){try{state=Object.assign(state,JSON.parse(localStorage.getItem('jlptPipLayout')||'{}'))}catch(_){}apply(false)}});observer.observe(mini,{attributes:true,attributeFilter:['class']});
 })();
 </script>
 </body>
