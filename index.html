@@ -997,7 +997,8 @@ function makeN2Example(source, variant=0){
   "彼の演説は説得力が圧倒的だと、多くの聴衆が評価した。",
   "그의 연설은 설득력이 압도적이라고 많은 청중이 평가했다."
  ],
- "貴重だ": [  "災害直後の証言は、当時の状況を知るうえで貴重だ。",
+ "貴重だ": [
+  "災害直後の証言は、当時の状況を知るうえで貴重だ。",
   "재해 직후의 증언은 당시 상황을 아는 데 귀중하다."
  ],
  "助詞": [
@@ -1996,7 +1997,8 @@ function makeN2Example(source, variant=0){
   "妹は店先で見つけた可愛い小物を、友人への贈り物に選んだ。",
   "여동생은 가게 앞에서 발견한 귀여운 소품을 친구에게 줄 선물로 골랐다."
  ],
- "古い": [  "この橋は古いが、定期的に補修されているため今も安全に使える。",
+ "古い": [
+  "この橋は古いが、定期的に補修されているため今も安全に使える。",
   "이 다리는 오래되었지만 정기적으로 보수되고 있어 지금도 안전하게 사용할 수 있다."
  ],
  "政治的だ": [
@@ -2995,7 +2997,8 @@ function makeN2Example(source, variant=0){
   "咳が長く続く場合は、医師に相談してください。",
   "기침이 오래 계속되면 의사와 상담해 주세요."
  ],
- "収集": [  "研究に必要な資料を全国の図書館から収集した。",
+ "収集": [
+  "研究に必要な資料を全国の図書館から収集した。",
   "연구에 필요한 자료를 전국 도서관에서 수집했다."
  ],
  "溢れる": [
@@ -3287,14 +3290,18 @@ function makeN2Example(source, variant=0){
  return {sentence,translation,segments,reading,meaning,verified:!!(curated||exact||found),drafted:!!curated,sourceType: (curated||exact)?'個別例文':found?'意味対応文型':'品詞別要補強'};
 }
 function buildExampleQueue(baseWords, policy='alternate'){
+ // 심화학습은 먼저 어휘 5개를 일반 방식(뜻→발음)으로 학습한 뒤,
+ // 그 5개 중 하나를 무작위로 골라 일본어 표기를 회상하는 문제를 1개 출제한다.
+ // 복습 선택지는 반드시 직전 학습 묶음 안의 어휘만 사용한다.
  const queue=[];
- for(let i=0;i<baseWords.length;i++){
-  const word=baseWords[i]; const ex=makeN2Example(word,i); if(!ex)continue;
-  const sentence=ex.sentence;
-  // q[9] is review approval metadata only; example-only kanji never enter vocab/uniqueVocab/questions.
-  queue.push([word[0],word[1],word[2],word[3]||'','reviewBlank',sentence,ex.translation,[],1,!!ex.drafted,ex.sourceType||'未分類']);
-  const pieces=ex.drafted?splitExampleSentence(sentence):[];
-  if(pieces.length>=3)queue.push([word[0],word[1],word[2],word[3]||'','reviewOrder',sentence,ex.translation,pieces,2,true,ex.sourceType||'個別例文']);
+ for(let start=0;start<baseWords.length;start+=5){
+  const group=baseWords.slice(start,start+5).filter(v=>v&&v[0]&&v[1]&&v[2]);
+  if(!group.length)continue;
+  group.forEach(word=>queue.push(word));
+  if(group.length>=4){
+   const target=group[Math.floor(Math.random()*group.length)];
+   queue.push([target[0],target[1],target[2],target[3]||'','reviewRecall','', '',group.map(v=>v[0]),1,true,'직전 5개 어휘 회상']);
+  }
  }
  return queue;
 }
@@ -3305,6 +3312,11 @@ function buildModeReviewQueue(baseWords, policy){
  return baseWords;
 }
 function exampleChoices(q){
+ if(q[4]==='reviewRecall'){
+  const group=Array.isArray(q[7])?q[7]:[];
+  const candidates=group.filter(w=>w&&w!==q[0]);
+  return shuffle([{text:q[0],ok:true},...shuffle([...new Set(candidates)]).slice(0,3).map(text=>({text,ok:false}))]);
+ }
  if(q[4]==='reviewOrder'){
   const pieces=q[7].map((text,i)=>({text,orig:i+1}));
   const displayed=shuffle(pieces.slice());
@@ -3325,11 +3337,16 @@ function exampleChoices(q){
  return shuffle([{text:q[0],ok:true},...distractors.map(text=>({text,ok:false}))]);
 }
 function beginRound(list,newPhase){phase=newPhase;questions=list;idx=0;stage=0;correct=0;wrong=0;answered=0;history=[];roundWrongNames=new Set();$('result').style.display='none';$('card').style.display='flex';$('choices').style.display='grid';$('feedback').style.display='block';render();savePersistent()}
-function start(){currentReactionCharacter=-1;updateAffectionPanel();clearTimeout(window.__previewTimer);clearTimeout(peekTimer);$('peek').classList.remove('show');clearTimeout(window.__advanceTimer);$('coachOverlay').classList.remove('show');phase='main';mainWrongNames=new Set();roundWrongNames=new Set();weakNames=new Set();reviewRound=0;const uniqueVocab=[...new Map(vocab.map(v=>[String(v[0]||'').normalize('NFC').trim(),v])).values()];let n=Math.min(+$('amount').value,uniqueVocab.length);const baseWords=shuffle(uniqueVocab.slice()).slice(0,n);questions=advancedMode?buildExampleQueue(baseWords,reviewPolicy):baseWords;idx=0;stage=0;correct=0;wrong=0;answered=0;history=[];locked=false;$('result').style.display='none';$('card').style.display='flex';$('choices').style.display='grid';$('feedback').style.display='block';render();savePersistent()}function updateDashboard(){let total=questions.length;let current=Math.min(idx+1,total);$('totalProblems').textContent=total;$('correctCount').textContent=correct;$('wrongCount').textContent=wrong;$('currentProblem').textContent=`${current} / ${total}`;$('back').disabled=history.length===0||idx>=questions.length;$('count').textContent=idx>=questions.length?'완료':`${current} / ${total}`;}function updateClock(){let d=new Date();$('datetime').textContent=new Intl.DateTimeFormat('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit',weekday:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(d)}function goBack(){if(!history.length)return;clearTimeout(peekTimer);$('peek').classList.remove('show');clearTimeout(window.__previewTimer);clearTimeout(window.__advanceTimer);let h=history.pop();idx=h.idx;stage=h.stage;correct=h.correct;wrong=h.wrong;answered=h.answered;locked=false;$('result').style.display='none';$('card').style.display='flex';$('choices').style.display='grid';$('feedback').style.display='block';render(true);savePersistent()}function renderCore(instant=false){renderToken++;const pg=$('previewGauge');if(pg){pg.classList.remove('active');}clearTimeout(peekTimer);clearTimeout(peekHideTimer);$('peek').classList.remove('show','wrong-reaction');if(idx>=questions.length){finish();return}updateDashboard();locked=true;let q=questions[idx];if(advancedMode&&(q[4]==='reviewBlank'||q[4]==='reviewOrder')){
- $('fill').style.width=`${idx/questions.length*100}%`;$('mode').textContent=q[4]==='reviewBlank'?'5문제 복습 · 빈칸 채우기':q[4]==='reviewOrder'?'5문제 복습 · 문장 배열':`예문 실전 · 예문 ${q[8]||1}/3`;
- $('word').textContent=q[4]==='reviewOrder'?'문장 배열':q[4]==='reviewBlank'?'복습 빈칸':'例文';
+function start(){currentReactionCharacter=-1;updateAffectionPanel();clearTimeout(window.__previewTimer);clearTimeout(peekTimer);$('peek').classList.remove('show');clearTimeout(window.__advanceTimer);$('coachOverlay').classList.remove('show');phase='main';mainWrongNames=new Set();roundWrongNames=new Set();weakNames=new Set();reviewRound=0;const uniqueVocab=[...new Map(vocab.map(v=>[String(v[0]||'').normalize('NFC').trim(),v])).values()];let n=Math.min(+$('amount').value,uniqueVocab.length);const baseWords=shuffle(uniqueVocab.slice()).slice(0,n);questions=advancedMode?buildExampleQueue(baseWords,reviewPolicy):baseWords;idx=0;stage=0;correct=0;wrong=0;answered=0;history=[];locked=false;$('result').style.display='none';$('card').style.display='flex';$('choices').style.display='grid';$('feedback').style.display='block';render();savePersistent()}function updateDashboard(){let total=questions.length;let current=Math.min(idx+1,total);$('totalProblems').textContent=total;$('correctCount').textContent=correct;$('wrongCount').textContent=wrong;$('currentProblem').textContent=`${current} / ${total}`;$('back').disabled=history.length===0||idx>=questions.length;$('count').textContent=idx>=questions.length?'완료':`${current} / ${total}`;}function updateClock(){let d=new Date();$('datetime').textContent=new Intl.DateTimeFormat('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit',weekday:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(d)}function goBack(){if(!history.length)return;clearTimeout(peekTimer);$('peek').classList.remove('show');clearTimeout(window.__previewTimer);clearTimeout(window.__advanceTimer);let h=history.pop();idx=h.idx;stage=h.stage;correct=h.correct;wrong=h.wrong;answered=h.answered;locked=false;$('result').style.display='none';$('card').style.display='flex';$('choices').style.display='grid';$('feedback').style.display='block';render(true);savePersistent()}function renderCore(instant=false){renderToken++;const pg=$('previewGauge');if(pg){pg.classList.remove('active');}clearTimeout(peekTimer);clearTimeout(peekHideTimer);$('peek').classList.remove('show','wrong-reaction');if(idx>=questions.length){finish();return}updateDashboard();locked=true;let q=questions[idx];if(advancedMode&&(q[4]==='reviewBlank'||q[4]==='reviewOrder'||q[4]==='reviewRecall')){
+ $('fill').style.width=`${idx/questions.length*100}%`;$('mode').textContent=q[4]==='reviewRecall'?'5문제 학습 완료 · 누적 어휘 회상':q[4]==='reviewBlank'?'5문제 복습 · 빈칸 채우기':q[4]==='reviewOrder'?'5문제 복습 · 문장 배열':`예문 실전 · 예문 ${q[8]||1}/3`;
+ $('word').textContent=q[4]==='reviewRecall'?'어휘 회상':q[4]==='reviewOrder'?'문장 배열':q[4]==='reviewBlank'?'복습 빈칸':'例文';
  $('sub').style.display='block';$('sub').className='sub example-sentence';
- if(q[9]!==true){
+ if(q[4]==='reviewRecall'){
+   $('sub').textContent='뜻: '+q[2];
+   $('prompt').style.display='block';
+   $('prompt').textContent='직전 5문제에서 학습한 어휘 중 알맞은 일본어 표기를 고르세요.';
+   opts=exampleChoices(q);
+ }else if(q[9]!==true){
    $('sub').textContent='뜻: '+q[2];
    $('prompt').style.display='block';
    $('prompt').textContent='예문 검수 중인 어휘입니다. 교재상 뜻에 해당하는 단어를 선택하세요.';
@@ -3345,7 +3362,7 @@ function start(){currentReactionCharacter=-1;updateAffectionPanel();clearTimeout
      $('prompt').style.display='block';
      $('prompt').textContent='이 뜻에 해당하는 일본어 단어를 선택하세요. (문맥만으로 답이 정해지지 않는 일반 예문 대신 뜻으로 확인합니다.)';
    }else{
-     const sentence=blankExampleTarget(q[5],q[0],q[1]);$('sub').innerHTML=renderAllExampleRuby(sentence);
+     const sentence=blankExampleTarget(q[5],q[0],q[1]);$('sub').textContent=sentence;
      $('prompt').style.display='block';$('prompt').textContent='문맥에 맞는 학습 어휘를 선택하세요.';
    }
    opts=exampleChoices(q);
@@ -3384,7 +3401,13 @@ else{$('summary').textContent=`복습까지 완료했습니다. ${questions.leng
 function recordAnswer(word,ok){const row=persistentStats[word]||(persistentStats[word]={attempts:0,correct:0,wrong:0,lastSeen:''});row.attempts++;if(ok)row.correct++;else row.wrong++;row.lastSeen=new Date().toISOString();savePersistent()}
 function savePersistent(){try{const data={version:3,selectedMode,advancedMode,reviewPolicy,phase,questions:questions.map(q=>vocab.findIndex(v=>v[0]===q[0])),questionQueue:questions,idx,stage,correct,wrong,answered,history,mainWrongNames:[...mainWrongNames],roundWrongNames:[...roundWrongNames],weakNames:[...weakNames],affection,persistentStats,amount:$('amount')?.value||'100',reviewSettings:{normal:$('review-normal')?.value||'off',otaku:$('review-otaku')?.value||'off',trueOtaku:$('review-trueOtaku')?.value||'off'},updatedAt:Date.now()};localStorage.setItem('jlptN2StudyData',JSON.stringify(data));progressSnapshot=data;const rb=$('resumeBtn');if(rb)rb.style.display=(data.questions.length&&data.idx<data.questions.length)?'block':'none'}catch(e){}}
 function loadPersistent(){try{const raw=localStorage.getItem('jlptN2StudyData');if(!raw)return null;const d=JSON.parse(raw);if(!d||![2,3].includes(d.version))return null;persistentStats=d.persistentStats||{};affection=Array.isArray(d.affection)&&d.affection.length===characters.length?d.affection:characters.map(()=>0);progressSnapshot=d;return d}catch(e){return null}}
-function resumeSaved(){const d=progressSnapshot||loadPersistent();if(!d||!d.questions?.length)return;selectedMode=d.selectedMode||'normal';advancedMode=!!d.advancedMode;reviewPolicy=d.reviewPolicy||'alternate';phase=d.phase||'main';questions=Array.isArray(d.questionQueue)&&d.questionQueue.length?d.questionQueue:d.questions.map(i=>vocab[i]).filter(Boolean);idx=Math.min(d.idx||0,questions.length);stage=d.stage||0;correct=d.correct||0;wrong=d.wrong||0;answered=d.answered||0;history=Array.isArray(d.history)?d.history:[];mainWrongNames=new Set(d.mainWrongNames||[]);roundWrongNames=new Set(d.roundWrongNames||[]);weakNames=new Set(d.weakNames||[]);$('amount').value=d.amount||'100';$('intro').style.display='none';$('affinityLaunch').style.display=selectedMode==='trueOtaku'?'block':'none';$('otakuSettingsLaunch').style.display=selectedMode==='trueOtaku'?'block':'none';$('result').style.display='none';$('card').style.display='flex';$('choices').style.display='grid';$('feedback').style.display='block';locked=false;updateAffectionPanel();render(true)}
+function resumeSaved(){const d=progressSnapshot||loadPersistent();if(!d||!d.questions?.length)return;selectedMode=d.selectedMode||'normal';advancedMode=!!d.advancedMode;reviewPolicy=d.reviewPolicy||'alternate';phase=d.phase||'main';questions=Array.isArray(d.questionQueue)&&d.questionQueue.length?d.questionQueue:d.questions.map(i=>vocab[i]).filter(Boolean);
+ let migratedLegacyQueue=false;
+ if(advancedMode&&questions.some(q=>Array.isArray(q)&&q[4]==='reviewBlank')){
+  const legacyWords=[...new Map(questions.filter(q=>Array.isArray(q)&&q[0]).map(q=>[q[0],vocab.find(v=>v[0]===q[0])]).filter(x=>x[1])).values()];
+  questions=buildExampleQueue(legacyWords,reviewPolicy);idx=0;stage=0;correct=0;wrong=0;answered=0;history=[];migratedLegacyQueue=true;
+ }
+ idx=migratedLegacyQueue?0:Math.min(d.idx||0,questions.length);stage=d.stage||0;correct=d.correct||0;wrong=d.wrong||0;answered=d.answered||0;history=Array.isArray(d.history)?d.history:[];mainWrongNames=new Set(d.mainWrongNames||[]);roundWrongNames=new Set(d.roundWrongNames||[]);weakNames=new Set(d.weakNames||[]);$('amount').value=d.amount||'100';$('intro').style.display='none';$('affinityLaunch').style.display=selectedMode==='trueOtaku'?'block':'none';$('otakuSettingsLaunch').style.display=selectedMode==='trueOtaku'?'block':'none';$('result').style.display='none';$('card').style.display='flex';$('choices').style.display='grid';$('feedback').style.display='block';locked=false;updateAffectionPanel();render(true)}
 function renderStats(){const rows=Object.entries(persistentStats);const attempts=rows.reduce((n,[,v])=>n+v.attempts,0),correctTotal=rows.reduce((n,[,v])=>n+v.correct,0),wrongTotal=rows.reduce((n,[,v])=>n+v.wrong,0);$('statsSummary').innerHTML=`<div class="stat"><div class="statlabel">누적 풀이</div><div class="statvalue">${attempts}</div></div><div class="stat"><div class="statlabel">누적 정답</div><div class="statvalue">${correctTotal}</div></div><div class="stat"><div class="statlabel">누적 오답</div><div class="statvalue">${wrongTotal}</div></div><div class="stat"><div class="statlabel">학습 단어</div><div class="statvalue">${rows.length}</div></div>`;const weak=rows.filter(([,v])=>v.wrong>0).sort((a,b)=>b[1].wrong-a[1].wrong||((a[1].correct/a[1].attempts)-(b[1].correct/b[1].attempts))).slice(0,30);const list=$('weakList');list.innerHTML='';if(!weak.length){list.textContent='아직 누적 오답이 없습니다. 문제를 풀면 취약 단어가 여기에 표시됩니다.';return}for(const [word,v] of weak){const q=vocab.find(x=>x[0]===word);const el=document.createElement('div');el.style.cssText='display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 12px;background:#202f47;border-radius:10px';const left=document.createElement('div');left.innerHTML=`<b style="font-size:16px">${escapeHTML(word)}</b><div style="font-size:12px;color:#c9d8ef">${escapeHTML(q?q[1]+' · '+q[2]:'')}</div>`;const right=document.createElement('div');right.style.cssText='text-align:right;white-space:nowrap;font-size:12px';right.textContent=`오답 ${v.wrong}회 · 정답률 ${Math.round(v.correct/Math.max(1,v.attempts)*100)}%`;el.append(left,right);list.appendChild(el)}const bars=$('statsBars');if(bars){bars.innerHTML='';const max=Math.max(1,...weak.map(([,v])=>v.wrong));for(const [word,v] of weak.slice(0,15)){const row=document.createElement('div');row.className='stats-bar-row';const label=document.createElement('div');const q=vocab.find(x=>x[0]===word);label.className='stats-bar-label';label.innerHTML=`<b>${escapeHTML(word)}</b><small>${escapeHTML(q?q[2]:'뜻 미등록')}</small>`;label.title=word+(q?' · '+q[2]:'');const track=document.createElement('div');track.className='stats-bar-track';const fill=document.createElement('div');fill.className='stats-bar-fill';fill.style.width=(v.wrong/max*100)+'%';track.appendChild(fill);const count=document.createElement('div');count.textContent=v.wrong+'회';row.append(label,track,count);bars.appendChild(row)}}}function escapeHTML(x){return String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function blankExampleTarget(sentence,word,reading=''){
  const text=String(sentence||''),target=String(word||''),kana=String(reading||'');
@@ -3442,8 +3465,8 @@ function renderAllExampleRuby(sentence){
   if(hit){out+='<ruby class="review-ruby">'+escapeHTML(hit[0])+'<rt>'+escapeHTML(hit[1])+'</rt></ruby>';i+=hit[0].length;continue;}
   const ch=text[i];
   if(/[一-龯々〆ヵヶ]/.test(ch)){
-   // Keep unregistered characters visible and explicitly flagged; never fabricate a reading.
-   out+='<ruby class="review-ruby">'+escapeHTML(ch)+'<rt>未登録</rt></ruby>';i++;
+   // 읽기 데이터가 없는 한자는 그대로 표시한다. '未登録' 같은 내부 상태를 학습 화면에 노출하지 않는다.
+   out+=escapeHTML(ch);i++;
   }else{out+=escapeHTML(ch);i++;}
  }
  return out;
@@ -3994,7 +4017,8 @@ body,.app,.card{overflow-anchor:none}
   }
   function closePlayer(){
     if(!overlay.classList.contains('open')||closing)return;
-    closing=true;    const target=launcher.getBoundingClientRect();
+    closing=true;
+    const target=launcher.getBoundingClientRect();
     overlay.classList.add('music-transitioning');
     morph(false,target);
     const delay=reduceMotion()?0:250;
