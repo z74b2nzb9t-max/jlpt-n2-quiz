@@ -1,5 +1,5 @@
 {
-  "version": "v64-blank-order-validation-fix",
+  "version": "v65",
   "note": "V64 automated repair build. All 653 JLPT vocabulary entries have a Japanese example and Korean translation. Blank generation now recognizes common inflected forms and passes a 653/653 target-detection test. Blank choices produce four unique choices with exactly one marked correct in the runtime test; distractors are drawn from the same coarse part-of-speech class and lower lexical-string similarity. Sentence-order generation now numbers the displayed shuffled fragments and maps the correct order to those displayed numbers; 13 eligible examples pass the option-count/uniqueness test. These are automated structural checks, not a complete human editorial approval. Manual checks of every lexical nuance, Japanese grammar, Korean translation, contextual uniqueness, and all distractor semantics remain outstanding.",
   "counts": {
     "total": 653,
@@ -23,10 +23,19 @@
   },
   "furigana": {
     "originalJLPTVocabulary": 653,
-    "supplementaryExampleEntries": 210,
-    "exactHeadwordOverlap": 0,
+    "supplementaryExampleEntries": 242,
+    "exactHeadwordOverlap": 653,
     "usedForQuizOptions": false,
-    "separateDisplayOnlyDictionary": true
+    "separateDisplayOnlyDictionary": true,
+    "displayOnlyDictionaryEntries": 895,
+    "quizGenerationUsesDisplayDictionary": false,
+    "allExamplesRenderedThroughSameLookup": true,
+    "fullKanjiCoverageHumanVerified": false,
+    "allExampleKanjiHaveFuriganaAutomatedCheck": true,
+    "exampleKanjiCharactersChecked": 7682,
+    "exampleKanjiCharactersAnnotated": 7682,
+    "unannotatedKanjiCharacters": 0,
+    "readingAccuracyHumanAuditComplete": false
   },
   "entries": [
     {
@@ -988,8 +997,7 @@
     {
       "index": 96,
       "word": "省略",
-      "reading": "しょうりゃく",
-      "meaning": "생략",
+      "reading": "しょうりゃく",      "meaning": "생략",
       "status": "drafted_pending_full_review",
       "sourceType": "個別例文",
       "sentence": "報告書では重複する説明を省略し、結論を先に示した。",
@@ -997,7 +1005,8 @@
     },
     {
       "index": 97,
-      "word": "尊重",      "reading": "そんちょう",
+      "word": "尊重",
+      "reading": "そんちょう",
       "meaning": "존중",
       "status": "drafted_pending_full_review",
       "sourceType": "個別例文",
@@ -1987,8 +1996,7 @@
       "sourceType": "個別例文",
       "sentence": "トラブルを防ぐため、変更点は作業を始める前に全員へ知らせることが望ましい。",
       "translation": "문제를 예방하기 위해 변경 사항은 작업을 시작하기 전에 모두에게 알리는 것이 바람직하다.",
-      "fullReview": false
-    },
+      "fullReview": false    },
     {
       "index": 188,
       "word": "損失",
@@ -1996,7 +2004,8 @@
       "meaning": "손실",
       "status": "drafted_pending_full_review",
       "sourceType": "個別例文",
-      "sentence": "商品の保管方法を見直したことで、輸送中に発生する損失を減らせた。",      "translation": "상품 보관 방법을 재검토한 덕분에 운송 중 발생하는 손실을 줄일 수 있었다.",
+      "sentence": "商品の保管方法を見直したことで、輸送中に発生する損失を減らせた。",
+      "translation": "상품 보관 방법을 재검토한 덕분에 운송 중 발생하는 손실을 줄일 수 있었다.",
       "fullReview": false
     },
     {
@@ -2986,8 +2995,7 @@
       "word": "詳細",
       "reading": "しょうさい",
       "meaning": "상세",
-      "status": "individual_context_example_pending_full_review",
-      "sourceType": "個別文脈例文（暫定・要最終校閲）",
+      "status": "individual_context_example_pending_full_review",      "sourceType": "個別文脈例文（暫定・要最終校閲）",
       "sentence": "担当者は利用条件を詳細に説明した。",
       "translation": "담당자는 이용 조건을 상세히 설명했다."
     },
@@ -2995,7 +3003,8 @@
       "index": 284,
       "word": "助言",
       "reading": "じょげん",
-      "meaning": "조언",      "status": "individual_context_example_pending_full_review",
+      "meaning": "조언",
+      "status": "individual_context_example_pending_full_review",
       "sourceType": "個別文脈例文（暫定・要最終校閲）",
       "sentence": "進路に迷っていた彼は、先生から具体的な助言を受けた。",
       "translation": "진로를 고민하던 그는 선생님에게 구체적인 조언을 받았다."
@@ -3985,8 +3994,7 @@
       "index": 376,
       "word": "年明け",
       "reading": "としあけ",
-      "meaning": "새해, 연초",
-      "status": "drafted_pending_full_review",
+      "meaning": "새해, 연초",      "status": "drafted_pending_full_review",
       "sourceType": "個別例文",
       "sentence": "年明けから新しい部署に異動するため、今の仕事を整理している。",
       "translation": "새해부터 새 부서로 이동하기 때문에 현재 업무를 정리하고 있다.",
@@ -3994,7 +4002,8 @@
     },
     {
       "index": 377,
-      "word": "和菓子",      "reading": "わがし",
+      "word": "和菓子",
+      "reading": "わがし",
       "meaning": "일본식 과자",
       "status": "drafted_pending_full_review",
       "sourceType": "個別例文",
@@ -4984,8 +4993,7 @@
       "translation": "너무 진한 수프에 물을 넣어 조금 묽게 했다."
     },
     {
-      "index": 473,
-      "word": "修理",
+      "index": 473,      "word": "修理",
       "reading": "しゅうり",
       "meaning": "수리",
       "status": "individual_context_example_pending_full_review",
@@ -4993,7 +5001,8 @@
       "sentence": "故障した機械を修理するため、専門の業者に連絡した。",
       "translation": "고장 난 기계를 수리하기 위해 전문 업체에 연락했다."
     },
-    {      "index": 474,
+    {
+      "index": 474,
       "word": "繰り返す",
       "reading": "くりかえす",
       "meaning": "반복하다",
@@ -5983,8 +5992,7 @@
       "sourceType": "個別文脈例文（暫定・要最終校閲）",
       "sentence": "猫は来客の気配を感じると、家具の下に隠れた。",
       "translation": "고양이는 손님 기척을 느끼자 가구 아래에 숨었다."
-    },
-    {
+    },    {
       "index": 569,
       "word": "分厚い",
       "reading": "ぶあつい",
@@ -5992,7 +6000,8 @@
       "status": "individual_context_example_pending_full_review",
       "sourceType": "個別文脈例文（暫定・要最終校閲）",
       "sentence": "この本は分厚いが、図が多くて読みやすい。",
-      "translation": "이 책은 두껍지만 그림이 많아 읽기 쉽다."    },
+      "translation": "이 책은 두껍지만 그림이 많아 읽기 쉽다."
+    },
     {
       "index": 570,
       "word": "弱い",
@@ -6872,5 +6881,28 @@
     "sentenceOrderChoiceStructure": "13/13 sets contained four distinct order options and exactly one option marked correct",
     "sentenceOrderDisplayNumberMapping": "corrected: options now refer to the shuffled displayed fragment numbers",
     "supplementaryFuriganaDictionary": "kept separate from original JLPT vocabulary and answer-option source"
+  },
+  "v65Changes": {
+    "phraseLevelFuriganaCorrections": {
+      "count": 11,
+      "examples": {
+        "今週": "こんしゅう",
+        "今週金曜日": "こんしゅうきんようび",
+        "受け付けて": "うけつけて",
+        "受け付けている": "うけつけている",
+        "受け付ける": "うけつける",
+        "受け付け": "うけつけ",
+        "講演会": "こうえんかい",
+        "講演会への": "こうえんかいへの",
+        "申し込み": "もうしこみ",
+        "申し込みは": "もうしこみは",
+        "金曜日": "きんようび"
+      },
+      "scope": "Known compound/conjugated forms including 今週 and 受け付けて; this is not a complete native-speaker audit of all example readings."
+    },
+    "advancedQuestionCadence": "One contextual advanced item is inserted after each block of five vocabulary questions in both regular and advanced session entry paths. It alternates between contextual blank-fill and sentence-order reconstruction when valid source sentence data permits.",
+    "advancedAnswerFeedback": "Advanced question text is shown without furigana before submission; the completed sentence is rendered with furigana after answer submission.",
+    "previewUX": "Three-second preview gauge animation and tap-to-reveal answer choices.",
+    "validation": "All inline JavaScript blocks passed Node syntax checking."
   }
 }
