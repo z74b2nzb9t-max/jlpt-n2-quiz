@@ -3491,20 +3491,14 @@ function blankExampleTarget(sentence,word,reading=''){
 }
 function renderAllExampleRuby(sentence){
  const text=String(sentence||'');
- const dict=(window.JLPT_EXAMPLE_FURIGANA&&window.JLPT_EXAMPLE_FURIGANA.entries)||{};
- const dictTerms=Object.entries(dict).filter(([k,v])=>k&&v&&/[一-龯々〆ヵヶ]/.test(k)).map(([k,v])=>[k,v]);
- const terms=dictTerms.sort((a,b)=>b[0].length-a[0].length);
+ const dict={...((window.JLPT_EXAMPLE_FURIGANA&&window.JLPT_EXAMPLE_FURIGANA.entries)||{})};
+ for(const v of vocab){if(v&&v[0]&&v[1]&&/[一-龯々〆ヵヶ]/.test(v[0]))dict[String(v[0])]=String(v[1]);}
+ const headwords=new Set(vocab.map(v=>String(v[0])));
+ const terms=Object.entries(dict).filter(([w,r])=>w&&r&&/[一-龯々〆ヵヶ]/.test(w)&&(Array.from(w).length>=2||headwords.has(w))).sort((a,b)=>b[0].length-a[0].length);
  let out='',i=0;
- while(i<text.length){let hit=null;for(const t of terms){if(text.startsWith(t[0],i)){hit=t;break;}}
+ while(i<text.length){let hit=null;for(const [w,r] of terms){if(text.startsWith(w,i)){hit=[w,r];break;}}
   if(hit){out+='<ruby class="review-ruby">'+escapeHTML(hit[0])+'<rt>'+escapeHTML(hit[1])+'</rt></ruby>';i+=hit[0].length;continue;}
-  const ch=text[i];
-  if(/[一-龯々〆ヵヶ]/.test(ch)){
-   const fallback=(window.JLPT_EXAMPLE_FURIGANA&&window.JLPT_EXAMPLE_FURIGANA.kanjiFallback)||{};
-   const reading=fallback[ch];
-   if(reading)out+='<ruby class=\"review-ruby\">'+escapeHTML(ch)+'<rt>'+escapeHTML(reading)+'</rt></ruby>';
-   else out+=escapeHTML(ch);
-   i++;
-  }else{out+=escapeHTML(ch);i++;}
+  out+=escapeHTML(text[i]);i++;
  }
  return out;
 }
@@ -3538,14 +3532,15 @@ function renderTargetRuby(sentence,word,reading){const text=String(sentence||'')
 function renderSentenceRuby(sentence,targetWord,targetReading){
  const text=String(sentence||'');
  const dict={...((window.JLPT_EXAMPLE_FURIGANA&&window.JLPT_EXAMPLE_FURIGANA.entries)||{})};
+ for(const v of vocab){if(v&&v[0]&&v[1]&&/[一-龯々〆ヵヶ]/.test(v[0]))dict[String(v[0])]=String(v[1]);}
  if(targetWord&&targetReading)dict[String(targetWord)]=String(targetReading);
- const terms=Object.entries(dict).filter(([w,r])=>w&&r&&/[一-龯々〆ヵヶ]/.test(w)).sort((a,b)=>b[0].length-a[0].length);
+ const headwords=new Set(vocab.map(v=>String(v[0])));
+ const terms=Object.entries(dict).filter(([w,r])=>w&&r&&/[一-龯々〆ヵヶ]/.test(w)&&(Array.from(w).length>=2||headwords.has(w))).sort((a,b)=>b[0].length-a[0].length);
  let out='',i=0;
  while(i<text.length){let hit=null;for(const [w,r] of terms){if(text.startsWith(w,i)){hit=[w,r];break;}}
-  if(hit){out+='<ruby class=\"review-ruby\">'+escapeHTML(hit[0])+'<rt>'+escapeHTML(hit[1])+'</rt></ruby>';i+=hit[0].length;}
-  else{const ch=text[i],fallback=(window.JLPT_EXAMPLE_FURIGANA&&window.JLPT_EXAMPLE_FURIGANA.kanjiFallback)||{},reading=fallback[ch];
-   if(/[一-龯々〆ヵヶ]/.test(ch)&&reading)out+='<ruby class=\"review-ruby\">'+escapeHTML(ch)+'<rt>'+escapeHTML(reading)+'</rt></ruby>';
-   else out+=escapeHTML(ch);i++;}}
+  if(hit){out+='<ruby class="review-ruby">'+escapeHTML(hit[0])+'<rt>'+escapeHTML(hit[1])+'</rt></ruby>';i+=hit[0].length;}
+  else{out+=escapeHTML(text[i]);i++;}
+ }
  return out;
 }
 
