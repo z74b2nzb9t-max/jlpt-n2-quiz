@@ -35,7 +35,28 @@
     "exampleKanjiCharactersChecked": 7682,
     "exampleKanjiCharactersAnnotated": 7682,
     "unannotatedKanjiCharacters": 0,
-    "readingAccuracyHumanAuditComplete": false
+    "readingAccuracyHumanAuditComplete": false,
+    "all653ExamplesExtracted": true,
+    "examplesAudited": 653,
+    "uniqueExamples": 653,
+    "unsafePerCharacterFallbackRemoved": true,
+    "headwordDictionaryEntriesAdded": 653,
+    "contextualOverridesAdded": 11,
+    "kanjiCoverageAfterSafeMatchPercent": 40.2,
+    "examplesWithAtLeastOneUnannotatedKanji": 643,
+    "manualReviewOfAllReadingsComplete": false,
+    "policy": "Never fabricate a reading by concatenating single-kanji readings. Display only exact phrase-level or JLPT-headword readings; leave unverified kanji unannotated until reviewed.",
+    "sampleCorrection": {
+      "sentence": "受付時間を過ぎて訪ねてきた業者は、警備員に入口で追い返された。",
+      "readings": {
+        "受付時間": "うけつけじかん",
+        "訪ねてきた": "たずねてきた",
+        "業者": "ぎょうしゃ",
+        "警備員": "けいびいん",
+        "入口": "いりぐち",
+        "追い返された": "おいかえされた"
+      }
+    }
   },
   "entries": [
     {
