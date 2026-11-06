@@ -997,7 +997,8 @@
     {
       "index": 96,
       "word": "省略",
-      "reading": "しょうりゃく",      "meaning": "생략",
+      "reading": "しょうりゃく",
+      "meaning": "생략",
       "status": "drafted_pending_full_review",
       "sourceType": "個別例文",
       "sentence": "報告書では重複する説明を省略し、結論を先に示した。",
@@ -1996,7 +1997,8 @@
       "sourceType": "個別例文",
       "sentence": "トラブルを防ぐため、変更点は作業を始める前に全員へ知らせることが望ましい。",
       "translation": "문제를 예방하기 위해 변경 사항은 작업을 시작하기 전에 모두에게 알리는 것이 바람직하다.",
-      "fullReview": false    },
+      "fullReview": false
+    },
     {
       "index": 188,
       "word": "損失",
@@ -2995,7 +2997,8 @@
       "word": "詳細",
       "reading": "しょうさい",
       "meaning": "상세",
-      "status": "individual_context_example_pending_full_review",      "sourceType": "個別文脈例文（暫定・要最終校閲）",
+      "status": "individual_context_example_pending_full_review",
+      "sourceType": "個別文脈例文（暫定・要最終校閲）",
       "sentence": "担当者は利用条件を詳細に説明した。",
       "translation": "담당자는 이용 조건을 상세히 설명했다."
     },
@@ -3994,7 +3997,8 @@
       "index": 376,
       "word": "年明け",
       "reading": "としあけ",
-      "meaning": "새해, 연초",      "status": "drafted_pending_full_review",
+      "meaning": "새해, 연초",
+      "status": "drafted_pending_full_review",
       "sourceType": "個別例文",
       "sentence": "年明けから新しい部署に異動するため、今の仕事を整理している。",
       "translation": "새해부터 새 부서로 이동하기 때문에 현재 업무를 정리하고 있다.",
@@ -4993,7 +4997,8 @@
       "translation": "너무 진한 수프에 물을 넣어 조금 묽게 했다."
     },
     {
-      "index": 473,      "word": "修理",
+      "index": 473,
+      "word": "修理",
       "reading": "しゅうり",
       "meaning": "수리",
       "status": "individual_context_example_pending_full_review",
@@ -5992,7 +5997,8 @@
       "sourceType": "個別文脈例文（暫定・要最終校閲）",
       "sentence": "猫は来客の気配を感じると、家具の下に隠れた。",
       "translation": "고양이는 손님 기척을 느끼자 가구 아래에 숨었다."
-    },    {
+    },
+    {
       "index": 569,
       "word": "分厚い",
       "reading": "ぶあつい",
