@@ -3511,30 +3511,28 @@ function renderAllExampleRuby(sentence){
 function splitExampleSentence(sentence){
  const text=String(sentence||'').trim().replace(/。/gu,'');
  if(!text||Array.from(text).length<12)return [];
- const chunks=[text];
- const boundary=/(?:た後に|てから|ために|ながら|ので|のに|ことが|ことを|ことに|ように|として|については|について|によって|に対して|という|からは|までは|には|では|とは|にも|から|まで|より|だけ|など|ても|を|が|は|に|で|と|も|へ)/gu;
- while(chunks.length<4){
-  let best=null;
-  for(let ci=0;ci<chunks.length;ci++){
-   const chunk=chunks[ci];
-   if(Array.from(chunk).length<9)continue;
-   boundary.lastIndex=0;let m;
-   while((m=boundary.exec(chunk))){
-    let cut=m.index+m[0].length;
-    while(chunk[cut]==='、')cut++;
-    const left=chunk.slice(0,cut),right=chunk.slice(cut);
-    const ll=Array.from(left).length,rl=Array.from(right).length;
-    if(ll<4||rl<4)continue;
-    // Prefer a cut near the middle, while avoiding very short fragments.
-    const score=Math.abs(ll-rl)+(ci===0?0:0);
-    if(!best||score<best.score)best={ci,left,right,score};
-   }
-  }
-  if(!best)break;
-  chunks.splice(best.ci,1,best.left,best.right);
+ const boundary=/(?:ている|ていた|た後に|てから|ために|ながら|ので|のに|ことが|ことを|ことに|ように|として|については|について|によって|に対して|という|からは|までは|には|では|とは|にも|される|された|できる|できた|なった|だった|でしょう|ました|した|して|する|なる|あった|から|まで|より|だけ|など|ても|を|が|は|に|で|と|も|へ)/gu;
+ const cuts=new Set();boundary.lastIndex=0;let m;
+ while((m=boundary.exec(text))){
+  let cut=m.index+m[0].length;
+  while(text[cut]==='、')cut++;
+  if(cut>=4&&Array.from(text.slice(cut)).length>=4)cuts.add(cut);
  }
- if(chunks.length<3||chunks.length>4||chunks.some(x=>Array.from(x).length<4)||chunks.join('')!==text)return [];
- return chunks;
+ const points=[...cuts].sort((x,y)=>x-y);
+ let best=null;
+ function consider(indices){
+  const bounds=[0,...indices,text.length],parts=[];
+  for(let i=0;i<bounds.length-1;i++)parts.push(text.slice(bounds[i],bounds[i+1]));
+  const lengths=parts.map(x=>Array.from(x).length);
+  if(lengths.some(x=>x<4))return;
+  const avg=lengths.reduce((a,x)=>a+x,0)/lengths.length;
+  const variance=lengths.reduce((a,x)=>a+(x-avg)*(x-avg),0)/lengths.length;
+  if(!best||variance<best.score)best={parts,score:variance};
+ }
+ for(let i=0;i<points.length;i++)for(let j=i+1;j<points.length;j++)consider([points[i],points[j]]);
+ for(let i=0;i<points.length;i++)for(let j=i+1;j<points.length;j++)for(let k=j+1;k<points.length;k++)consider([points[i],points[j],points[k]]);
+ if(!best||best.parts.length<3||best.parts.length>4||best.parts.join('')!==text)return [];
+ return best.parts;
 }
 function renderTargetRuby(sentence,word,reading){const text=String(sentence||''),w=String(word||'');if(!w||!text.includes(w))return escapeHTML(text);const at=text.indexOf(w);return escapeHTML(text.slice(0,at))+'<ruby class="review-ruby">'+escapeHTML(w)+'<rt>'+escapeHTML(reading||'')+'</rt></ruby>'+escapeHTML(text.slice(at+w.length));}
 function renderSentenceRuby(sentence,targetWord,targetReading){
