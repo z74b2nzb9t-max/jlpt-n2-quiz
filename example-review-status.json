@@ -42,8 +42,8 @@
     "unsafePerCharacterFallbackRemoved": true,
     "headwordDictionaryEntriesAdded": 653,
     "contextualOverridesAdded": 11,
-    "kanjiCoverageAfterSafeMatchPercent": 40.2,
-    "examplesWithAtLeastOneUnannotatedKanji": 643,
+    "kanjiCoverageAfterSafeMatchPercent": 57.4,
+    "examplesWithAtLeastOneUnannotatedKanji": 635,
     "manualReviewOfAllReadingsComplete": false,
     "policy": "Never fabricate a reading by concatenating single-kanji readings. Display only exact phrase-level or JLPT-headword readings; leave unverified kanji unannotated until reviewed.",
     "sampleCorrection": {
@@ -56,7 +56,11 @@
         "入口": "いりぐち",
         "追い返された": "おいかえされた"
       }
-    }
+    },
+    "phraseDictionaryEntries": 1094,
+    "additionalPhraseReadings": 194,
+    "kanjiOccurrences": 7682,
+    "annotatedKanjiOccurrences": 4409
   },
   "entries": [
     {
